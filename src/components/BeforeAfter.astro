@@ -1,0 +1,32 @@
+---
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+---
+
+<section id="before-after">
+	<div class="container">
+		<span class="eyebrow">{t.beforeAfter.eyebrow}</span>
+		<h2>{t.beforeAfter.title}</h2>
+
+		<div class="ba-grid">
+			<div class="ba-col ba-before">
+				<h3>{t.beforeAfter.beforeLabel}</h3>
+				{t.beforeAfter.beforeSteps.map((step) => <div class="ba-step">{step}</div>)}
+			</div>
+
+			<div class="ba-arrow" aria-hidden="true">→</div>
+
+			<div class="ba-col ba-after">
+				<h3>{t.beforeAfter.afterLabel}</h3>
+				{t.beforeAfter.afterSteps.map((step) => <div class="ba-step">{step}</div>)}
+			</div>
+		</div>
+		<p class="ba-note">{t.beforeAfter.note}</p>
+	</div>
+</section>

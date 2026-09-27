@@ -1,0 +1,70 @@
+---
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+---
+
+<section class="final" id="contact">
+	<div class="container">
+		<span class="eyebrow" style="color:#9C97FF;">{t.contact.eyebrow}</span>
+		<h2>{t.contact.title}</h2>
+		<p class="lede">{t.contact.lede}</p>
+
+		<div class="final-grid">
+			<form class="form-card" id="leadForm">
+				<div class="field">
+					<label for="fName">{t.contact.form.name}</label>
+					<input type="text" id="fName" name="name" required />
+				</div>
+				<div class="field">
+					<label for="fEmail">{t.contact.form.email}</label>
+					<input type="email" id="fEmail" name="email" required />
+				</div>
+				<div class="field">
+					<label for="fCompany">{t.contact.form.company}</label>
+					<input type="text" id="fCompany" name="company" />
+				</div>
+				<div class="field">
+					<label for="fManual">{t.contact.form.manualLabel}</label>
+					<textarea id="fManual" name="manual_process" required></textarea>
+					<div class="field-hint">{t.contact.form.manualHint}</div>
+				</div>
+				<div class="field">
+					<label for="fTools">{t.contact.form.tools}</label>
+					<input type="text" id="fTools" name="current_tools" />
+				</div>
+				<div class="field">
+					<label for="fMore">{t.contact.form.moreLabel}</label>
+					<textarea id="fMore" name="additional_info"></textarea>
+				</div>
+				<!-- Prototype form: placeholder submission handler only. TODO: wire to the n8n webhook once the workflow is ready. -->
+				<button type="submit" class="btn btn-primary">{t.contact.form.submit}</button>
+				<p class="form-success" id="formSuccess">{t.contact.form.success}</p>
+			</form>
+
+			<div class="final-notes">
+				<h3 style="color:#fff;font-size:16px;">{t.contact.notesTitle}</h3>
+				<div class="btn-row" style="margin-top:14px;">
+					<a href="#contact" class="btn btn-ghost" style="border-color:#3B3E52;color:#fff;">{t.contact.bookCta}</a>
+				</div>
+				<ul>
+					{t.contact.notes.map((note) => <li>{note}</li>)}
+				</ul>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+	const leadForm = document.getElementById('leadForm') as HTMLFormElement | null;
+	leadForm?.addEventListener('submit', (e) => {
+		e.preventDefault();
+		document.getElementById('formSuccess')?.classList.add('visible');
+		leadForm.reset();
+	});
+</script>

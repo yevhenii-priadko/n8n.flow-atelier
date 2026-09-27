@@ -1,0 +1,63 @@
+---
+import '../styles/global.css';
+import type { Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+	title: string;
+	description: string;
+}
+
+const { lang, title, description } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang={lang}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+		<meta name="robots" content="index, follow" />
+
+		<!-- Open Graph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Flow Atelier" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:locale" content={lang === 'uk' ? 'uk_UA' : 'en_US'} />
+		<meta property="og:locale:alternate" content={lang === 'uk' ? 'en_US' : 'uk_UA'} />
+
+		<!-- Twitter / X -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+
+		<!-- hreflang -->
+		<link rel="alternate" hreflang="en" href="/en/" />
+		<link rel="alternate" hreflang="uk" href="/uk/" />
+		<link rel="alternate" hreflang="x-default" href="/en/" />
+
+		<!-- TODO: draft favicon cropped from Anton's logo mockup (raster, low-res) — swap for the real vector export once ready -->
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+		<!-- Fonts: functional fallback stack is used everywhere; the page remains fully readable if this request is blocked. -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+			rel="stylesheet"
+		/>
+
+		<meta name="generator" content={Astro.generator} />
+	</head>
+	<body>
+		<a href="#main" class="skip-link">Skip to content</a>
+		<slot />
+	</body>
+</html>

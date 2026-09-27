@@ -1,0 +1,29 @@
+---
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+const home = `/${lang}/`;
+const year = new Date().getFullYear();
+---
+
+<footer class="site">
+	<div class="container foot-grid">
+		<span class="brand" style="font-size:16px;">
+			<img src="/logo-mark.png" alt="" class="brand-mark" width="32" height="40" />
+			{t.brand}
+		</span>
+		<div class="foot-links">
+			<a href={`${home}#services`}>{t.nav.services}</a>
+			<a href={`${home}#technologies`}>{t.nav.technologies}</a>
+			<a href={`${home}#faq`}>{t.nav.faq}</a>
+			<a href={`${home}#contact`}>{t.nav.contact}</a>
+			<a href="mailto:[CONTACT_EMAIL_PLACEHOLDER]">[CONTACT_EMAIL_PLACEHOLDER]</a>
+		</div>
+		<span class="foot-legal">© {year} {t.brand}. {t.footer.rights}</span>
+	</div>
+</footer>

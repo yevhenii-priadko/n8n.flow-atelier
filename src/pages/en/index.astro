@@ -1,0 +1,53 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Hero from '../../components/Hero.astro';
+import Problem from '../../components/Problem.astro';
+import Services from '../../components/Services.astro';
+import HowItWorks from '../../components/HowItWorks.astro';
+import Technologies from '../../components/Technologies.astro';
+import Compare from '../../components/Compare.astro';
+import BeforeAfter from '../../components/BeforeAfter.astro';
+import Process from '../../components/Process.astro';
+import UseCases from '../../components/UseCases.astro';
+import WhoWeHelp from '../../components/WhoWeHelp.astro';
+import Examples from '../../components/Examples.astro';
+import Faq from '../../components/Faq.astro';
+import Contact from '../../components/Contact.astro';
+import Footer from '../../components/Footer.astro';
+import { getDictionary } from '../../i18n/utils';
+
+const lang = 'en' as const;
+const t = getDictionary(lang);
+
+const faqSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: t.faq.items.map((item) => ({
+		'@type': 'Question',
+		name: item.q,
+		acceptedAnswer: { '@type': 'Answer', text: item.a },
+	})),
+};
+---
+
+<Layout lang={lang} title={t.meta.title} description={t.meta.description}>
+	<Header lang={lang} />
+	<main id="main">
+		<Hero lang={lang} />
+		<Problem lang={lang} />
+		<Services lang={lang} />
+		<HowItWorks lang={lang} />
+		<Technologies lang={lang} />
+		<Compare lang={lang} />
+		<BeforeAfter lang={lang} />
+		<Process lang={lang} />
+		<UseCases lang={lang} />
+		<WhoWeHelp lang={lang} />
+		<Examples lang={lang} />
+		<Faq lang={lang} />
+		<Contact lang={lang} />
+	</main>
+	<Footer lang={lang} />
+	<script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+</Layout>

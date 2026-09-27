@@ -1,0 +1,27 @@
+---
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+---
+
+<section class="problem" id="who-we-help">
+	<div class="container">
+		<span class="eyebrow">{t.whoWeHelp.eyebrow}</span>
+		<h2>{t.whoWeHelp.title}</h2>
+		<div class="who-grid">
+			{
+				t.whoWeHelp.items.map((item) => (
+					<div class="who-card">
+						<h3>{item.title}</h3>
+						<p>{item.desc}</p>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</section>

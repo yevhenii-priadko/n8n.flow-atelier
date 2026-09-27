@@ -1,0 +1,38 @@
+---
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+---
+
+<section class="problem" id="compare">
+	<div class="container">
+		<span class="eyebrow">{t.compare.eyebrow}</span>
+		<h2>{t.compare.title}</h2>
+		<div class="compare-scroll">
+			<table class="compare-table">
+				<tr>
+					<th></th>
+					<th>n8n</th>
+					<th>Make</th>
+					<th>Zapier</th>
+				</tr>
+				{
+					t.compare.rows.map((row) => (
+						<tr>
+							<td>{row.label}</td>
+							<td>{row.n8n}</td>
+							<td>{row.make}</td>
+							<td>{row.zapier}</td>
+						</tr>
+					))
+				}
+			</table>
+		</div>
+		<p class="compare-cta">{t.compare.cta}</p>
+	</div>
+</section>

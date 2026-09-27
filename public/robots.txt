@@ -1,0 +1,4 @@
+# Пример: Разрешить всем ботам сканировать и индексировать ваш сайт.
+# Полный синтаксис: https://developers.google.com/search/docs/advanced/robots/create-robots-txt
+User-agent: *
+Allow: /

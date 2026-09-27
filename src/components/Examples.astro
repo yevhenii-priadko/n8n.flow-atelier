@@ -1,0 +1,46 @@
+---
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+const labels =
+	lang === 'uk'
+		? { problem: 'Проблема', solution: 'Рішення', result: 'Результат' }
+		: { problem: 'Problem', solution: 'Solution', result: 'Result' };
+---
+
+<section id="examples">
+	<div class="container">
+		<span class="eyebrow">{t.examples.eyebrow}</span>
+		<h2>{t.examples.title}</h2>
+		<p class="lede">{t.examples.lede}</p>
+
+		<div class="case-grid">
+			{
+				t.examples.cases.map((c) => (
+					<div class="case-card">
+						<span class="case-tag">{c.tag}</span>
+						<h3>{c.title}</h3>
+						<p class="case-flow">{c.flow}</p>
+						<div class="case-row">
+							<b>{labels.problem}</b>
+							<span>{c.problem}</span>
+						</div>
+						<div class="case-row">
+							<b>{labels.solution}</b>
+							<span>{c.solution}</span>
+						</div>
+						<div class="case-row">
+							<b>{labels.result}</b>
+							<span>{c.result}</span>
+						</div>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</section>

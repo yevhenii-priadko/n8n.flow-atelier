@@ -1,0 +1,27 @@
+---
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+const home = `/${lang}/`;
+---
+
+<section class="problem" id="problem">
+	<div class="container problem-grid">
+		<div>
+			<span class="eyebrow">{t.problem.eyebrow}</span>
+			<h2>{t.problem.title}</h2>
+			<p class="lede">{t.problem.lede}</p>
+			<div class="btn-row">
+				<a href={`${home}#contact`} class="btn btn-primary">{t.problem.cta}</a>
+			</div>
+		</div>
+		<div class="problem-list">
+			{t.problem.items.map((item) => <div class="problem-item">{item}</div>)}
+		</div>
+	</div>
+</section>

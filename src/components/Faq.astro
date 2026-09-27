@@ -1,0 +1,52 @@
+---
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+---
+
+<section class="problem" id="faq">
+	<div class="container">
+		<span class="eyebrow">{t.faq.eyebrow}</span>
+		<h2>{t.faq.title}</h2>
+
+		<div class="faq-list">
+			{
+				t.faq.items.map((item) => (
+					<div class="faq-item" data-open="false">
+						<button class="faq-q">
+							<span>{item.q}</span>
+							<span class="faq-plus" />
+						</button>
+						<div class="faq-a">
+							<p>{item.a}</p>
+						</div>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<script>
+	document.querySelectorAll('.faq-item').forEach((item) => {
+		const btn = item.querySelector('.faq-q');
+		const answer = item.querySelector<HTMLElement>('.faq-a');
+		btn?.addEventListener('click', () => {
+			const isOpen = item.getAttribute('data-open') === 'true';
+			document.querySelectorAll('.faq-item').forEach((other) => {
+				other.setAttribute('data-open', 'false');
+				const otherAnswer = other.querySelector<HTMLElement>('.faq-a');
+				if (otherAnswer) otherAnswer.style.maxHeight = '';
+			});
+			if (!isOpen && answer) {
+				item.setAttribute('data-open', 'true');
+				answer.style.maxHeight = answer.scrollHeight + 40 + 'px';
+			}
+		});
+	});
+</script>
