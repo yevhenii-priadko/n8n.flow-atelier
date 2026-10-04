@@ -1,0 +1,88 @@
+---
+import Icon from './Icon.astro';
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+// Former "Before / After" + "Examples" sections, merged.
+const labels = lang === 'uk'
+	? { problem: 'Проблема', solution: 'Рішення', result: 'Результат' }
+	: { problem: 'Problem', solution: 'Solution', result: 'Result' };
+---
+
+<section class="section section--alt" id="example">
+	<div class="container">
+		<div class="section-head">
+			<span class="eyebrow">{t.beforeAfter.eyebrow}</span>
+			<h2>{t.beforeAfter.title}</h2>
+			<p class="lede">{t.examples.lede}</p>
+		</div>
+
+		<div class="ba-grid">
+			<div class="ba-col ba-before">
+				<h3>
+					<span class="ba-badge"><Icon name="clock" size={16} /></span>
+					{t.beforeAfter.beforeLabel}
+				</h3>
+				<ol class="ba-steps">
+					{t.beforeAfter.beforeSteps.map((step) => <li>{step}</li>)}
+				</ol>
+			</div>
+
+			<div class="ba-arrow" aria-hidden="true">
+				<Icon name="arrow-right" size={22} />
+			</div>
+
+			<div class="ba-col ba-after">
+				<h3>
+					<span class="ba-badge"><Icon name="sparkles" size={16} /></span>
+					{t.beforeAfter.afterLabel}
+				</h3>
+				<ol class="ba-steps">
+					{
+						t.beforeAfter.afterSteps.map((step) => (
+							<li>
+								<Icon name="check" size={16} strokeWidth={2.5} />
+								{step}
+							</li>
+						))
+					}
+				</ol>
+			</div>
+		</div>
+		<p class="ba-note">{t.beforeAfter.note}</p>
+
+		<h3 class="sub-head">{t.examples.subtitle}</h3>
+		<div class="case-grid">
+			{
+				t.examples.cases.map((c) => (
+					<article class="case-card">
+						<span class="case-tag">{c.tag}</span>
+						<h4>{c.title}</h4>
+						<ol class="case-flow">
+							{c.flow.split('→').map((step) => <li>{step.trim()}</li>)}
+						</ol>
+						<dl class="case-rows">
+							<div>
+								<dt>{labels.problem}</dt>
+								<dd>{c.problem}</dd>
+							</div>
+							<div>
+								<dt>{labels.solution}</dt>
+								<dd>{c.solution}</dd>
+							</div>
+							<div>
+								<dt>{labels.result}</dt>
+								<dd>{c.result}</dd>
+							</div>
+						</dl>
+					</article>
+				))
+			}
+		</div>
+	</div>
+</section>

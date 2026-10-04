@@ -75,38 +75,47 @@ export const en = {
 		eyebrow: 'Services',
 		title: 'What we automate',
 		lede: 'Eight categories cover most of the repetitive work businesses ask us to remove.',
+		more: 'Don\'t see your process? Tell us about it — we\'ll show you what can be automated.',
 		items: [
 			{
 				title: 'Lead & CRM Automation',
 				desc: 'Capture, qualify, enrich and route leads automatically as they arrive.',
+				tags: ['Lead capture', 'Lead qualification', 'CRM updates'],
 			},
 			{
 				title: 'Email Automation',
 				desc: 'Process incoming emails, classify them and trigger the right action.',
+				tags: ['Email processing', 'Follow-up emails'],
 			},
 			{
 				title: 'Data & Spreadsheet Automation',
 				desc: 'Move, transform and synchronize information across your systems.',
+				tags: ['Spreadsheet updates', 'Data synchronization', 'Data enrichment'],
 			},
 			{
 				title: 'Document Automation',
 				desc: 'Extract, classify and route information from incoming documents.',
+				tags: ['Document processing', 'Invoice processing'],
 			},
 			{
 				title: 'Reporting Automation',
 				desc: 'Collect data from multiple sources and generate recurring reports on schedule.',
+				tags: ['Reporting', 'Automated reports', 'Notifications'],
 			},
 			{
 				title: 'Customer Onboarding',
 				desc: 'Turn a multi-step onboarding checklist into a self-running sequence.',
+				tags: ['Customer onboarding', 'Appointment workflows', 'Approval workflows'],
 			},
 			{
 				title: 'AI-Powered Automation',
 				desc: 'Add classification, summarization and decision logic to existing workflows.',
+				tags: ['AI email classification', 'AI document classification'],
 			},
 			{
 				title: 'Application Integration',
 				desc: 'Connect the tools you already use so information flows without manual steps.',
+				tags: ['Order processing', 'Internal operations'],
 			},
 		],
 	},
@@ -179,7 +188,7 @@ export const en = {
 		cta: 'Not sure which platform you need? We can help you choose.',
 	},
 	beforeAfter: {
-		eyebrow: 'Before / After',
+		eyebrow: 'Process example',
 		title: 'The same process, with the manual steps removed',
 		beforeLabel: 'BEFORE — manual',
 		afterLabel: 'AFTER — automated',
@@ -276,6 +285,7 @@ export const en = {
 	},
 	examples: {
 		eyebrow: 'Examples',
+		subtitle: 'More process examples',
 		title: 'What an automated process looks like',
 		lede: 'Illustrative examples of the kind of workflow we build — shown here as examples, not verified client case studies.',
 		cases: [
@@ -300,6 +310,8 @@ export const en = {
 	faq: {
 		eyebrow: 'FAQ',
 		title: 'Frequently asked questions',
+		lede: 'Didn\'t find your answer? Describe your process — we\'ll reply within one business day.',
+		cta: 'Ask a question',
 		items: [
 			{
 				q: 'What is business process automation?',

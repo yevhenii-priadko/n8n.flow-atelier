@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 import { getDictionary, type Locale } from '../i18n/utils';
 
 interface Props {
@@ -7,24 +8,68 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = getDictionary(lang);
+const home = `/${lang}/`;
+// Technologies + the n8n / Make / Zapier comparison, merged.
+const marks = ['brand:n8n', 'brand:make', 'brand:zapier', 'webhook', 'sparkles'];
+const tones = ['n8n', 'make', 'zapier', 'blue', 'violet'];
 ---
 
-<section id="technologies">
+<section class="section section--white" id="technologies">
 	<div class="container">
-		<span class="eyebrow">{t.technologies.eyebrow}</span>
-		<h2>{t.technologies.title}</h2>
-		<p class="lede">{t.technologies.lede}</p>
+		<div class="section-head">
+			<span class="eyebrow">{t.technologies.eyebrow}</span>
+			<h2>{t.technologies.title}</h2>
+			<p class="lede">{t.technologies.lede}</p>
+		</div>
 
-		<div class="tech-grid">
+		<ul class="tech-grid">
 			{
-				t.technologies.items.map((item) => (
-					<div class="tech-card">
+				t.technologies.items.map((item, i) => (
+					<li class="tech-card">
+						<span class={`card-icon card-icon--${tones[i]}`}>
+							<Icon name={marks[i]} size={22} />
+						</span>
 						<h3>{item.title}</h3>
 						<p>{item.desc}</p>
-					</div>
+					</li>
 				))
 			}
-		</div>
+		</ul>
 		<p class="tech-note">{t.technologies.note}</p>
+
+		<div class="compare-card">
+			<span class="eyebrow">{t.compare.eyebrow}</span>
+			<h3 class="sub-head">{t.compare.title}</h3>
+			<div class="compare-scroll">
+				<table class="compare-table">
+					<thead>
+						<tr>
+							<th scope="col"><span class="visually-hidden">—</span></th>
+							<th scope="col">n8n</th>
+							<th scope="col">Make</th>
+							<th scope="col">Zapier</th>
+						</tr>
+					</thead>
+					<tbody>
+						{
+							t.compare.rows.map((row) => (
+								<tr>
+									<th scope="row">{row.label}</th>
+									<td>{row.n8n}</td>
+									<td>{row.make}</td>
+									<td>{row.zapier}</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+			</div>
+			<p class="compare-cta">
+				<a href={`${home}#contact`}>
+					{t.compare.cta}
+					<Icon name="arrow-right" size={16} />
+				</a>
+			</p>
+		</div>
 	</div>
 </section>

@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 import { getDictionary, type Locale } from '../i18n/utils';
 
 interface Props {
@@ -8,20 +9,34 @@ interface Props {
 const { lang } = Astro.props;
 const t = getDictionary(lang);
 const home = `/${lang}/`;
+// one icon per pain point, same order as t.problem.items
+const icons = ['arrow-left-right', 'user-round-pen', 'mail', 'table', 'chart-column', 'bell', 'folder-input', 'repeat', 'copy'];
 ---
 
-<section class="problem" id="problem">
+<section class="section problem" id="problem">
 	<div class="container problem-grid">
-		<div>
+		<div class="section-head">
 			<span class="eyebrow">{t.problem.eyebrow}</span>
 			<h2>{t.problem.title}</h2>
 			<p class="lede">{t.problem.lede}</p>
 			<div class="btn-row">
-				<a href={`${home}#contact`} class="btn btn-primary">{t.problem.cta}</a>
+				<a href={`${home}#contact`} class="btn btn-primary">
+					{t.problem.cta}
+					<Icon name="arrow-right" size={18} />
+				</a>
 			</div>
 		</div>
-		<div class="problem-list">
-			{t.problem.items.map((item) => <div class="problem-item">{item}</div>)}
-		</div>
+		<ul class="problem-list">
+			{
+				t.problem.items.map((item, i) => (
+					<li class="problem-item">
+						<span class="problem-icon">
+							<Icon name={icons[i] ?? 'clock'} size={18} />
+						</span>
+						{item}
+					</li>
+				))
+			}
+		</ul>
 	</div>
 </section>

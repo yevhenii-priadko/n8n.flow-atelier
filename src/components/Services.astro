@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 import { getDictionary, type Locale } from '../i18n/utils';
 
 interface Props {
@@ -7,23 +8,41 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = getDictionary(lang);
+const home = `/${lang}/`;
+// Services + former "Use cases": each category lists the concrete processes as tags.
+const icons = ['users', 'mail', 'table', 'file-text', 'chart-column', 'user-check', 'sparkles', 'plug'];
 ---
 
-<section id="services">
+<section class="section section--white" id="services">
 	<div class="container">
-		<span class="eyebrow">{t.services.eyebrow}</span>
-		<h2>{t.services.title}</h2>
-		<p class="lede">{t.services.lede}</p>
+		<div class="section-head">
+			<span class="eyebrow">{t.services.eyebrow}</span>
+			<h2>{t.services.title}</h2>
+			<p class="lede">{t.services.lede}</p>
+		</div>
 
-		<div class="svc-grid">
+		<ul class="svc-grid">
 			{
-				t.services.items.map((item) => (
-					<div class="svc-card">
+				t.services.items.map((item, i) => (
+					<li class="svc-card">
+						<span class="card-icon">
+							<Icon name={icons[i]} size={22} />
+						</span>
 						<h3>{item.title}</h3>
 						<p>{item.desc}</p>
-					</div>
+						<ul class="tag-list">
+							{item.tags.map((tag) => <li class="tag">{tag}</li>)}
+						</ul>
+					</li>
 				))
 			}
-		</div>
+		</ul>
+
+		<p class="section-more">
+			<a href={`${home}#contact`}>
+				{t.services.more}
+				<Icon name="arrow-right" size={16} />
+			</a>
+		</p>
 	</div>
 </section>

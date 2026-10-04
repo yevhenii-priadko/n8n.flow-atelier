@@ -40,21 +40,163 @@ const stagePos = [
 const hubL = HUB.x - HUB.size / 2;
 const hubR = HUB.x + HUB.size / 2;
 
-// A bundle of 3 strands per connection gives the "fibre" look from the mockup.
-const strands = [-5, 0, 5];
-const inWires = sourceY.flatMap((y) =>
-	strands.map((d, k) => {
-		const x0 = SRC.x + SRC.w;
-		const yEnd = HUB.y + (y - HUB.y) * 0.18 + d * 0.6;
-		return `M${x0},${y} C${x0 + 90},${y + d} ${hubL - 110},${yEnd + d * 2} ${hubL},${yEnd}`;
-	}),
-);
-const outWires = toolY.flatMap((y) =>
-	strands.map((d) => {
-		const yStart = HUB.y + (y - HUB.y) * 0.18 + d * 0.6;
-		return `M${hubR},${yStart} C${hubR + 100},${yStart + d * 2} ${TOOL.x - 80},${y + d} ${TOOL.x},${y}`;
-	}),
-);
+/*
+ * Wires: "ribbon" style from Anton's sketch (flow-atelier-ribbons-v2.svg).
+ * Each connection = soft blurred glow + gradient core + a thin filament.
+ * Left ribbons are cyan → blue, right ones blue → violet; they converge
+ * tightly at the hub so the bundle reads as one stream.
+ */
+const CONVERGE = 0.1; // how much the ribbons still fan out where they touch the hub
+const srcEdge = SRC.x + SRC.w;
+
+type Pt = [number, number];
+const bez = (p0: Pt, p1: Pt, p2: Pt, p3: Pt, t: number): Pt => {
+	const u = 1 - t;
+	return [
+		u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+		u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+	];
+};
+const curvePts = (x0: number, y0: number, x1: number, y1: number, k0: number, k1: number): [Pt, Pt, Pt, Pt] => [
+	[x0, y0],
+	[x0 + (x1 - x0) * k0, y0],
+	[x1 - (x1 - x0) * k1, y1],
+	[x1, y1],
+];
+const toPath = (c: [Pt, Pt, Pt, Pt]) => `M${c[0][0]},${c[0][1]} C${c[1].join(',')} ${c[2].join(',')} ${c[3].join(',')}`;
+const f1 = (n: number) => n.toFixed(1);
+
+/**
+ * "Silk" ribbon: a filled band along a cubic curve whose width follows
+ * |cos|, so it narrows to a twist and opens again — that is what gives the
+ * sketch its folded-fabric look. widthAt(t) peaks near the hub.
+ */
+type SilkOpts = { maxW: number; twist: number; phase: number; peak: number; hubAtEnd: boolean };
+const silk = (c: [Pt, Pt, Pt, Pt], o: SilkOpts) => {
+	const N = 32;
+	const top: Pt[] = [];
+	const bot: Pt[] = [];
+	for (let i = 0; i <= N; i++) {
+		const t = i / N;
+		const p = bez(c[0], c[1], c[2], c[3], t);
+		const q = bez(c[0], c[1], c[2], c[3], Math.min(1, t + 0.01));
+		const r = bez(c[0], c[1], c[2], c[3], Math.max(0, t - 0.01));
+		let nx = -(q[1] - r[1]);
+		let ny = q[0] - r[0];
+		const len = Math.hypot(nx, ny) || 1;
+		nx /= len;
+		ny /= len;
+		// h = 0 at the chip, 1 at the hub. Thin at the chip, swelling to its
+		// widest at `peak`, easing off a little into the hub — like a brush stroke.
+		const h = o.hubAtEnd ? t : 1 - t;
+		const rise = Math.sin((Math.PI / 2) * Math.min(1, h / o.peak));
+		const fall = h > o.peak ? 1 - 0.55 * ((h - o.peak) / (1 - o.peak)) ** 2 : 1;
+		const envelope = rise * fall * Math.min(1, h * 3);
+		const w = (o.maxW / 2) * envelope * Math.cos(Math.PI * (t * o.twist + o.phase));
+		top.push([p[0] + nx * w, p[1] + ny * w]);
+		bot.push([p[0] - nx * w, p[1] - ny * w]);
+	}
+	const pts = [...top, ...bot.reverse()];
+	return 'M' + pts.map((p) => `${f1(p[0])},${f1(p[1])}`).join(' L') + ' Z';
+};
+
+// Seeded random (mulberry32): irregular "brush strokes", identical on every build.
+const rng = (seed: number) => () => {
+	seed |= 0;
+	seed = (seed + 0x6d2b79f5) | 0;
+	let x = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+	x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+	return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+};
+const between = (r: () => number, a: number, b: number) => a + (b - a) * r();
+
+/*
+ * Iridescent palettes — every ribbon gets its own gradient so neighbours
+ * shimmer in different hues: mint/cyan → blue on the left; blue → violet →
+ * pink-lilac on the right (top ribbons go furthest into violet).
+ * Stops run from the chip end to the hub end (left) / hub to tool (right).
+ */
+const IN_PAL = [
+	['#7af2dc', '#3fd6ec', '#1fc0d8', '#3a6dff'],
+	['#8be9ff', '#38bdff', '#5b5cff', '#3e63ff'],
+	['#a6f4ff', '#2fd5ff', '#2b8cff', '#2fc8ff'],
+	['#62e8f2', '#3b78ff', '#8a5cff', '#4b5cff'],
+	['#8be8ff', '#4ac8ff', '#2fdcd2', '#3a7dff'],
+];
+const OUT_PAL = [
+	['#3b6bff', '#7a5cff', '#b85cff', '#ea7bff'],
+	['#2fb8ff', '#5f63ff', '#9a60ff', '#c47bff'],
+	['#3fd0ff', '#4c8bff', '#7a6cff', '#b07bff'],
+	['#6a5cff', '#3fa8ff', '#6a7cff', '#c07bff'],
+	['#3a74ff', '#47d0ff', '#8a7bff', '#e07bff'],
+	['#7a5cff', '#b05cff', '#e07bff', '#f08bd8'],
+];
+const STOP_AT = [0, 0.4, 0.72, 1];
+const STOP_OP_IN = [0.45, 0.9, 0.92, 0.95];
+const STOP_OP_OUT = [0.95, 0.92, 0.9, 0.75];
+
+const FIBRES = [
+	{ d: -14, k: 0.38 },
+	{ d: -8, k: 0.6 },
+	{ d: -2, k: 0.47 },
+	{ d: 4, k: 0.7 },
+	{ d: 10, k: 0.42 },
+	{ d: 15, k: 0.58 },
+];
+
+/** 2–3 brush strokes per connection: random width, twist, swell point and opacity. */
+const strokes = (r: () => number, from: Pt, to: Pt, hubAtEnd: boolean, g: string[], tame = false) => {
+	const n = r() < 0.45 ? 3 : 2;
+	return Array.from({ length: n }, (_, k) => {
+		const wide = r() < 0.3; // a few broad, airy strokes among narrower ones
+		// `tame`: keep an edge ribbon from sticking out — nudge it toward the bundle and cap its width
+		const raw = between(r, -14, 14);
+		const jitter = tame ? Math.abs(raw) * 0.6 : raw;
+		const a: Pt = hubAtEnd ? [from[0] + between(r, 0, 36), from[1] + jitter] : from;
+		const b: Pt = hubAtEnd ? to : [to[0] - between(r, 0, 36), to[1] + jitter];
+		const c = curvePts(a[0], a[1], b[0], b[1], between(r, 0.3, 0.7), between(r, 0.3, 0.7));
+		return {
+			d: silk(c, {
+				maxW: (wide ? between(r, 26, 38) : between(r, 5, 18)) * (tame ? 0.6 : 1),
+				twist: between(r, 0.4, 2.2),
+				phase: r(),
+				peak: between(r, 0.45, 0.9),
+				hubAtEnd,
+			}),
+			g: g[k % g.length],
+			o: (wide ? between(r, 0.22, 0.38) : between(r, 0.4, 0.68)).toFixed(2),
+		};
+	});
+};
+
+const inRibbons = sourceY.map((y, i) => {
+	const yHub = HUB.y + (y - HUB.y) * CONVERGE;
+	const main = curvePts(srcEdge, y, hubL + 4, yHub, 0.5, 0.5);
+	const g = [`ribIn${i}`, `ribIn${(i + 2) % IN_PAL.length}`, `ribIn${(i + 4) % IN_PAL.length}`];
+	return {
+		d: toPath(main),
+		g,
+		fc: IN_PAL[i][1],
+		silk: strokes(rng(11 + i * 7), [srcEdge, y], [hubL + 4, yHub], true, g),
+		fibres: FIBRES.map((f, j) =>
+			toPath(curvePts(srcEdge, y + f.d * 0.6, hubL + 8, yHub + f.d * 0.1, f.k, 1 - f.k + 0.08 * ((i + j) % 3))),
+		),
+	};
+});
+const outRibbons = toolY.map((y, i) => {
+	const yHub = HUB.y + (y - HUB.y) * CONVERGE;
+	const main = curvePts(hubR - 4, yHub, TOOL.x - 7, y, 0.5, 0.5);
+	const g = [`ribOut${i}`, `ribOut${(i + 3) % OUT_PAL.length}`, `ribOut${(i + 5) % OUT_PAL.length}`];
+	return {
+		d: toPath(main),
+		g,
+		fc: OUT_PAL[i][2],
+		silk: strokes(rng(101 + i * 13), [hubR - 4, yHub], [TOOL.x - 7, y], false, g, i === 0),
+		fibres: FIBRES.map((f, j) =>
+			toPath(curvePts(hubR - 8, yHub + f.d * 0.1, TOOL.x - 7, y + f.d * 0.45, 1 - f.k + 0.08 * ((i + j) % 3), f.k)),
+		),
+	};
+});
 const stageArrows = [
 	'M246,100 C258,148 290,174 320,186',
 	'M466,104 C460,148 444,172 424,184',
@@ -100,31 +242,85 @@ const stageArrows = [
 
 		<figure class="flow" aria-label={f.label}>
 			<div class="flow-canvas" style={`--hub-x:${HUB.x};--hub-y:${HUB.y}`}>
-				<svg class="flow-wires" viewBox="0 0 680 460" aria-hidden="true" focusable="false">
+				<svg class="flow-wires" viewBox="0 0 680 460" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
 					<defs>
-						<linearGradient id="wireGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="680" y2="0">
-							<stop offset="0" stop-color="#8fb4ff" stop-opacity="0.35"></stop>
-							<stop offset="0.45" stop-color="#3d63ff"></stop>
-							<stop offset="0.55" stop-color="#5a5cff"></stop>
-							<stop offset="1" stop-color="#9b6bff" stop-opacity="0.5"></stop>
-						</linearGradient>
-						<filter id="wireGlow" x="-10%" y="-30%" width="120%" height="160%">
+						{
+							IN_PAL.map((pal, i) => (
+								<linearGradient id={`ribIn${i}`} gradientUnits="userSpaceOnUse" x1={srcEdge} y1="0" x2={hubL} y2="0">
+									{pal.map((c, k) => <stop offset={STOP_AT[k]} stop-color={c} stop-opacity={STOP_OP_IN[k]} />)}
+								</linearGradient>
+							))
+						}
+						{
+							OUT_PAL.map((pal, i) => (
+								<linearGradient id={`ribOut${i}`} gradientUnits="userSpaceOnUse" x1={hubR} y1="0" x2={TOOL.x} y2="0">
+									{pal.map((c, k) => <stop offset={STOP_AT[k]} stop-color={c} stop-opacity={STOP_OP_OUT[k]} />)}
+								</linearGradient>
+							))
+						}
+						<filter id="ribBlur" x="-20%" y="-100%" width="140%" height="300%">
 							<feGaussianBlur stdDeviation="4"></feGaussianBlur>
 						</filter>
+						<filter id="ribHaze" x="-50%" y="-100%" width="200%" height="300%">
+							<feGaussianBlur stdDeviation="9"></feGaussianBlur>
+						</filter>
+						<filter id="ribSoft" x="-20%" y="-100%" width="140%" height="300%">
+							<feGaussianBlur stdDeviation="1.8"></feGaussianBlur>
+						</filter>
+						<linearGradient id="beamGrad" gradientUnits="userSpaceOnUse" x1={hubL - 190} y1="0" x2={hubR + 190} y2="0">
+							<stop offset="0" stop-color="#7fe3ff" stop-opacity="0"></stop>
+							<stop offset="0.3" stop-color="#6fd0ff" stop-opacity="0.7"></stop>
+							<stop offset="0.5" stop-color="#5aa8ff"></stop>
+							<stop offset="0.7" stop-color="#9d8bff" stop-opacity="0.7"></stop>
+							<stop offset="1" stop-color="#b98bff" stop-opacity="0"></stop>
+						</linearGradient>
+						<filter id="ribBeam" x="-30%" y="-400%" width="160%" height="900%">
+							<feGaussianBlur stdDeviation="7"></feGaussianBlur>
+						</filter>
+						<marker id="toolArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto">
+							<path d="M1,1 L9,5 L1,9" fill="none" stroke="#8a63ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+						</marker>
 						<marker id="stageArrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
 							<path d="M1,1 L8,5 L1,9" fill="none" stroke="#3d63ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
 						</marker>
 					</defs>
 
-					<g class="wire-glow" filter="url(#wireGlow)">
-						{[...inWires, ...outWires].filter((_, i) => i % 3 === 1).map((d) => <path d={d} />)}
+					<ellipse class="rib-haze" cx={HUB.x} cy={HUB.y} rx="190" ry="70" filter="url(#ribHaze)"></ellipse>
+
+					<g class="rib-silk-glow" filter="url(#ribBlur)">
+						{[...inRibbons, ...outRibbons].map((r) => <path d={r.silk[0].d} fill={`url(#${r.silk[0].g})`} />)}
 					</g>
-					<g class="wire-strands">
-						{[...inWires, ...outWires].map((d) => <path d={d} />)}
+					<g class="rib-fil rib-in">
+						{inRibbons.flatMap((r) => r.fibres.map((d, j) => <path d={d} stroke={j % 2 ? r.fc : `url(#${r.g[1]})`} />))}
+					</g>
+					<g class="rib-fil rib-out">
+						{outRibbons.flatMap((r) => r.fibres.map((d, j) => <path d={d} stroke={j % 2 ? r.fc : `url(#${r.g[1]})`} />))}
+					</g>
+					<g class="rib-silk">
+						{[...inRibbons, ...outRibbons].flatMap((r) =>
+							r.silk.map((st) => <path d={st.d} fill={`url(#${st.g})`} style={`opacity:${st.o}`} />),
+						)}
+					</g>
+					<g class="rib-arrows">
+						{outRibbons.map((r) => <path d={r.d} marker-end="url(#toolArrow)" />)}
+					</g>
+
+					<!-- light burst behind the hub: wide soft beam + bright core -->
+					<path class="rib-beam" d={`M${hubL - 190},${HUB.y} L${hubR + 190},${HUB.y}`} stroke="url(#beamGrad)" filter="url(#ribBeam)"></path>
+					<ellipse class="rib-core-light" cx={HUB.x} cy={HUB.y} rx="90" ry="22" filter="url(#ribBeam)"></ellipse>
+
+					<!-- white light pulses running along the ribbons (soft halo + crisp core) -->
+					<g class="wire-pulse wire-pulse--halo" filter="url(#ribSoft)">
+						{[...inRibbons, ...outRibbons].map((r, i) => (
+							<path d={r.d} style={`animation-delay:${(-i * 0.41).toFixed(2)}s`} />
+						))}
 					</g>
 					<g class="wire-pulse">
-						{[...inWires, ...outWires].filter((_, i) => i % 3 === 1).map((d, i) => (
-							<path d={d} style={`animation-delay:${(-i * 0.37).toFixed(2)}s`} />
+						{[...inRibbons, ...outRibbons].map((r, i) => (
+							<path d={r.d} style={`animation-delay:${(-i * 0.41).toFixed(2)}s`} />
+						))}
+						{[...inRibbons, ...outRibbons].map((r, i) => (
+							<path class="wire-pulse--fibre" d={r.fibres[i % r.fibres.length]} style={`animation-delay:${(-i * 0.67 - 1.3).toFixed(2)}s`} />
 						))}
 					</g>
 					<g class="stage-arrows">

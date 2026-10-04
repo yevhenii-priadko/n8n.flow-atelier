@@ -9,11 +9,13 @@ const { lang } = Astro.props;
 const t = getDictionary(lang);
 ---
 
-<section class="final" id="contact">
+<section class="section final" id="contact">
 	<div class="container">
-		<span class="eyebrow" style="color:#9C97FF;">{t.contact.eyebrow}</span>
-		<h2>{t.contact.title}</h2>
-		<p class="lede">{t.contact.lede}</p>
+		<div class="section-head">
+			<span class="eyebrow">{t.contact.eyebrow}</span>
+			<h2>{t.contact.title}</h2>
+			<p class="lede">{t.contact.lede}</p>
+		</div>
 
 		<div class="final-grid">
 			<form class="form-card" id="leadForm">
@@ -48,9 +50,10 @@ const t = getDictionary(lang);
 			</form>
 
 			<div class="final-notes">
-				<h3 style="color:#fff;font-size:16px;">{t.contact.notesTitle}</h3>
-				<div class="btn-row" style="margin-top:14px;">
-					<a href="#contact" class="btn btn-ghost" style="border-color:#3B3E52;color:#fff;">{t.contact.bookCta}</a>
+				<h3>{t.contact.notesTitle}</h3>
+				<div class="btn-row">
+					<!-- TODO: point to the real booking link (Calendly etc.); currently it just stays on this section -->
+					<a href="#contact" class="btn btn-outline-light">{t.contact.bookCta}</a>
 				</div>
 				<ul>
 					{t.contact.notes.map((note) => <li>{note}</li>)}

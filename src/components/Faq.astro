@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 import { getDictionary, type Locale } from '../i18n/utils';
 
 interface Props {
@@ -7,22 +8,30 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = getDictionary(lang);
+const home = `/${lang}/`;
 ---
 
-<section class="problem" id="faq">
-	<div class="container">
-		<span class="eyebrow">{t.faq.eyebrow}</span>
-		<h2>{t.faq.title}</h2>
+<section class="section section--white" id="faq">
+	<div class="container faq-grid">
+		<div class="section-head faq-intro">
+			<span class="eyebrow">{t.faq.eyebrow}</span>
+			<h2>{t.faq.title}</h2>
+			<p class="lede">{t.faq.lede}</p>
+			<a href={`${home}#contact`} class="btn btn-primary">
+				{t.faq.cta}
+				<Icon name="arrow-right" size={18} />
+			</a>
+		</div>
 
 		<div class="faq-list">
 			{
-				t.faq.items.map((item) => (
+				t.faq.items.map((item, i) => (
 					<div class="faq-item" data-open="false">
-						<button class="faq-q">
+						<button class="faq-q" type="button" aria-expanded="false" aria-controls={`faq-a-${i}`}>
 							<span>{item.q}</span>
-							<span class="faq-plus" />
+							<span class="faq-plus" aria-hidden="true" />
 						</button>
-						<div class="faq-a">
+						<div class="faq-a" id={`faq-a-${i}`}>
 							<p>{item.a}</p>
 						</div>
 					</div>
@@ -40,11 +49,13 @@ const t = getDictionary(lang);
 			const isOpen = item.getAttribute('data-open') === 'true';
 			document.querySelectorAll('.faq-item').forEach((other) => {
 				other.setAttribute('data-open', 'false');
+				other.querySelector('.faq-q')?.setAttribute('aria-expanded', 'false');
 				const otherAnswer = other.querySelector<HTMLElement>('.faq-a');
 				if (otherAnswer) otherAnswer.style.maxHeight = '';
 			});
 			if (!isOpen && answer) {
 				item.setAttribute('data-open', 'true');
+				btn.setAttribute('aria-expanded', 'true');
 				answer.style.maxHeight = answer.scrollHeight + 40 + 'px';
 			}
 		});
