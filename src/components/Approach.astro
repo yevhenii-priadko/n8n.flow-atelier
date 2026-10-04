@@ -1,0 +1,38 @@
+---
+import Icon from './Icon.astro';
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+const icons = ['message-circle-more', 'search', 'lightbulb', 'rocket', 'chart-line'];
+---
+
+<section class="approach" id="approach">
+	<div class="container approach-grid">
+		<div class="approach-intro">
+			<span class="eyebrow">{t.approach.eyebrow}</span>
+			<h2>{t.approach.title}</h2>
+			<p>{t.approach.lede}</p>
+		</div>
+
+		<ol class="approach-steps">
+			{
+				t.approach.steps.map((step, i) => (
+					<li class="approach-step">
+						<div class="approach-head">
+							<span class="approach-num">{i + 1}</span>
+							<Icon name={icons[i]} size={28} strokeWidth={1.6} class="approach-icon" />
+						</div>
+						<h3>{step.title}</h3>
+						<p>{step.desc}</p>
+						<span class="approach-meta">{step.meta}</span>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+</section>

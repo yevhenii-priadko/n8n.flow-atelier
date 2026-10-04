@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 import { getDictionary, getAlternateUrl, type Locale } from '../i18n/utils';
 
 interface Props {
@@ -7,46 +8,89 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = getDictionary(lang);
-const altUrl = getAlternateUrl(Astro.url.pathname, lang === 'en' ? 'uk' : 'en');
 const home = `/${lang}/`;
+const urlFor = (target: Locale) => (target === lang ? home : getAlternateUrl(Astro.url.pathname, target));
+
+const links = [
+	{ href: '#services', label: t.nav.services },
+	{ href: '#technologies', label: t.nav.technologies },
+	{ href: '#use-cases', label: t.nav.useCases },
+	{ href: '#how-it-works', label: t.nav.howItWorks },
+	{ href: '#contact', label: t.nav.contact },
+];
+const langs: { code: Locale; label: string }[] = [
+	{ code: 'uk', label: 'UA' },
+	{ code: 'en', label: 'EN' },
+];
 ---
 
-<header class="site">
+<header class="site" id="siteHeader">
 	<div class="container nav">
 		<a href={home} class="brand">
 			<img src="/logo-mark.png" alt="" class="brand-mark" width="32" height="40" />
 			{t.brand}
 		</a>
 
-		<ul class="nav-links" id="navLinks">
-			<li><a href={`${home}#services`}>{t.nav.services}</a></li>
-			<li><a href={`${home}#who-we-help`}>{t.nav.solutions}</a></li>
-			<li><a href={`${home}#how-it-works`}>{t.nav.howItWorks}</a></li>
-			<li><a href={`${home}#technologies`}>{t.nav.technologies}</a></li>
-			<li><a href={`${home}#use-cases`}>{t.nav.useCases}</a></li>
-			<li><a href={`${home}#faq`}>{t.nav.faq}</a></li>
-			<li><a href={`${home}#contact`}>{t.nav.contact}</a></li>
-			<li><a href={`${home}#contact`}>{t.nav.cta}</a></li>
-		</ul>
+		<nav class="nav-menu" aria-label={t.nav.menu}>
+			<ul class="nav-links" id="navLinks">
+				{
+					links.map((l) => (
+						<li>
+							<a href={`${home}${l.href}`}>{l.label}</a>
+						</li>
+					))
+				}
+				<li class="nav-links-cta">
+					<a href={`${home}#contact`} class="btn btn-primary">
+						{t.nav.cta}
+						<Icon name="arrow-right" size={18} />
+					</a>
+				</li>
+			</ul>
+		</nav>
 
 		<div class="nav-right">
 			<div class="lang-switch" role="group" aria-label="Language">
-				<a href={lang === 'en' ? home : altUrl} aria-current={lang === 'en' ? 'true' : 'false'}>EN</a>
-				<a href={lang === 'uk' ? home : altUrl} aria-current={lang === 'uk' ? 'true' : 'false'}>UA</a>
+				{
+					langs.map((l) => (
+						<a href={urlFor(l.code)} hreflang={l.code} aria-current={l.code === lang ? 'true' : undefined}>
+							{l.label}
+						</a>
+					))
+				}
 			</div>
-			<button class="nav-toggle" aria-expanded="false" aria-controls="navLinks" id="navToggle" aria-label="Toggle navigation">☰</button>
+			<a href={`${home}#contact`} class="btn btn-primary nav-cta">
+				{t.nav.cta}
+				<Icon name="arrow-right" size={18} />
+			</a>
+			<button class="nav-toggle" type="button" aria-expanded="false" aria-controls="navLinks" id="navToggle" aria-label={t.nav.menu}>
+				<Icon name="menu" size={22} class="nav-toggle-open" />
+				<Icon name="x" size={22} class="nav-toggle-close" />
+			</button>
 		</div>
 	</div>
 </header>
 
 <script>
+	const header = document.getElementById('siteHeader');
 	const navToggle = document.getElementById('navToggle');
 	const navLinks = document.getElementById('navLinks');
-	navToggle?.addEventListener('click', () => {
-		const isOpen = navLinks?.classList.toggle('open');
-		navToggle.setAttribute('aria-expanded', String(Boolean(isOpen)));
+
+	const setOpen = (open: boolean) => {
+		navLinks?.classList.toggle('open', open);
+		navToggle?.setAttribute('aria-expanded', String(open));
+	};
+
+	navToggle?.addEventListener('click', () => setOpen(!navLinks?.classList.contains('open')));
+	navLinks?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && navLinks?.classList.contains('open')) {
+			setOpen(false);
+			navToggle?.focus();
+		}
 	});
-	navLinks?.querySelectorAll('a').forEach((a) => {
-		a.addEventListener('click', () => navLinks.classList.remove('open'));
-	});
+
+	const onScroll = () => header?.classList.toggle('scrolled', window.scrollY > 8);
+	onScroll();
+	window.addEventListener('scroll', onScroll, { passive: true });
 </script>

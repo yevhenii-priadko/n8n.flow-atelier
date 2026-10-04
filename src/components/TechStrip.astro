@@ -1,0 +1,32 @@
+---
+import TechLogo from './TechLogo.astro';
+import { getDictionary, type Locale } from '../i18n/utils';
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getDictionary(lang);
+const ids = ['n8n', 'make', 'zapier', 'deepseek', 'openai', 'claude', 'googlecloud', 'aws'] as const;
+---
+
+<section class="tech-strip" aria-label={t.techStrip.label}>
+	<div class="container tech-strip-inner">
+		<p class="tech-strip-label">{t.techStrip.label}</p>
+		<ul class="tech-strip-logos">
+			{
+				ids.map((id) => (
+					<li>
+						<TechLogo id={id} size={22} />
+					</li>
+				))
+			}
+			<li class="tech-strip-more">{t.techStrip.more}</li>
+		</ul>
+		<p class="tech-strip-note" aria-hidden="true">
+			{t.techStrip.note}
+			<svg viewBox="0 0 120 14" focusable="false"><path d="M2 10 C 30 2, 70 2, 118 8" /></svg>
+		</p>
+	</div>
+</section>

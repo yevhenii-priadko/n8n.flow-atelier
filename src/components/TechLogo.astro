@@ -1,0 +1,32 @@
+---
+import Icon from './Icon.astro';
+
+/** Brand logo + name for the "We work with" strip. Falls back to a text wordmark if the SVG is missing. */
+interface Props {
+	id: keyof typeof brands;
+	size?: number;
+	mono?: boolean;
+}
+
+const brands = {
+	n8n: { name: 'n8n', color: '#EA4B71' },
+	make: { name: 'make', color: '#6D00CC' },
+	zapier: { name: 'zapier', color: '#FF4F00' },
+	deepseek: { name: 'DeepSeek', color: '#5786FE' },
+	openai: { name: 'ChatGPT', color: '#000000' },
+	claude: { name: 'Claude', color: '#D97757' },
+	googlecloud: { name: 'Google Cloud', color: '#4285F4' },
+	aws: { name: 'aws', color: '#232F3E' },
+} as const;
+
+const { id, size = 26, mono = false } = Astro.props;
+const brand = brands[id];
+
+const files = import.meta.glob('../icons/brands/*.svg');
+const hasSvg = `../icons/brands/${id}.svg` in files;
+---
+
+<span class:list={['tech-logo', { 'tech-logo--text': !hasSvg }]} style={mono ? undefined : `--brand:${brand.color}`}>
+	{hasSvg && <Icon name={`brand:${id}`} size={size} class="tech-logo-mark" />}
+	<span class="tech-logo-name">{brand.name}</span>
+</span>

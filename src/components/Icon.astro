@@ -1,0 +1,66 @@
+---
+/**
+ * Inline SVG icon from src/icons/ — no runtime JS, no npm dependency.
+ *
+ *   <Icon name="search" />            → src/icons/ui/search.svg     (Lucide, stroke)
+ *   <Icon name="brand:n8n" />         → src/icons/brands/n8n.svg    (Simple Icons, fill)
+ *
+ * Colour follows `currentColor`, so set it with CSS `color`.
+ * Decorative by default (aria-hidden); pass `label` to make it announced.
+ * To add an icon: drop the .svg into src/icons/ui or src/icons/brands.
+ */
+interface Props {
+	name: string;
+	size?: number | string;
+	label?: string;
+	class?: string;
+	strokeWidth?: number;
+}
+
+const { name, size = 24, label, class: className, strokeWidth } = Astro.props;
+
+const files = import.meta.glob<string>('../icons/**/*.svg', {
+	query: '?raw',
+	import: 'default',
+	eager: true,
+});
+
+const isBrand = name.startsWith('brand:');
+const file = isBrand ? `../icons/brands/${name.slice(6)}.svg` : `../icons/ui/${name}.svg`;
+const raw = files[file];
+
+if (!raw) {
+	throw new Error(`Icon "${name}" not found (looked for ${file.replace('../', 'src/')})`);
+}
+
+const viewBox = raw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 24 24';
+const inner = raw
+	.replace(/^[\s\S]*?<svg[^>]*>/, '')
+	.replace(/<\/svg>\s*$/, '')
+	.replace(/<title>[\s\S]*?<\/title>/, '')
+	.replace(/<metadata>[\s\S]*?<\/metadata>/g, '');
+
+const paint = isBrand
+	? ({ fill: 'currentColor' } as const)
+	: ({
+			fill: 'none',
+			stroke: 'currentColor',
+			'stroke-width': strokeWidth ?? 2,
+			'stroke-linecap': 'round' as const,
+			'stroke-linejoin': 'round' as const,
+		} as const);
+---
+
+<svg
+	xmlns="http://www.w3.org/2000/svg"
+	viewBox={viewBox}
+	width={size}
+	height={size}
+	class:list={['icon', className]}
+	{...paint}
+	role={label ? 'img' : undefined}
+	aria-label={label}
+	aria-hidden={label ? undefined : 'true'}
+	focusable="false"
+	set:html={inner}
+/>

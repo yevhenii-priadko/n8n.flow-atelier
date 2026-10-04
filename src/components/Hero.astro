@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 import { getDictionary, type Locale } from '../i18n/utils';
 
 interface Props {
@@ -8,60 +9,180 @@ interface Props {
 const { lang } = Astro.props;
 const t = getDictionary(lang);
 const home = `/${lang}/`;
+const f = t.hero.flow;
+
+const pillarIcons = ['search', 'brain', 'settings', 'chart-column'];
+
+/*
+ * Diagram geometry, in a 680 × 460 design space. The canvas keeps that aspect
+ * ratio from 768px up and every size inside is expressed in --u (1/680 of the
+ * canvas width), so the whole picture scales as one piece. Below 768px it
+ * falls back to a stacked, un-scaled layout and the wires are hidden.
+ */
+const HUB = { x: 372, y: 236, size: 108 };
+const SRC = { x: 0, w: 124 };
+const TOOL = { x: 570, w: 110 };
+
+const sourceIcons = ['layout-grid', 'mail', 'database', 'file-text', 'workflow'];
+const sourceY = [140, 188, 236, 284, 332];
+
+const toolIcons = ['brand:n8n', 'brand:make', 'brand:zapier', 'cloud-cog', 'webhook', 'sparkles'];
+const toolTone = ['n8n', 'make', 'zapier', 'blue', 'blue', 'violet'];
+const toolY = [124, 172, 220, 268, 316, 364];
+
+const stagePos = [
+	{ x: 140, y: 0, w: 210 },
+	{ x: 362, y: 6, w: 206 },
+	{ x: 128, y: 362, w: 220 },
+	{ x: 360, y: 362, w: 208 },
+];
+
+const hubL = HUB.x - HUB.size / 2;
+const hubR = HUB.x + HUB.size / 2;
+
+// A bundle of 3 strands per connection gives the "fibre" look from the mockup.
+const strands = [-5, 0, 5];
+const inWires = sourceY.flatMap((y) =>
+	strands.map((d, k) => {
+		const x0 = SRC.x + SRC.w;
+		const yEnd = HUB.y + (y - HUB.y) * 0.18 + d * 0.6;
+		return `M${x0},${y} C${x0 + 90},${y + d} ${hubL - 110},${yEnd + d * 2} ${hubL},${yEnd}`;
+	}),
+);
+const outWires = toolY.flatMap((y) =>
+	strands.map((d) => {
+		const yStart = HUB.y + (y - HUB.y) * 0.18 + d * 0.6;
+		return `M${hubR},${yStart} C${hubR + 100},${yStart + d * 2} ${TOOL.x - 80},${y + d} ${TOOL.x},${y}`;
+	}),
+);
+const stageArrows = [
+	'M246,100 C258,148 290,174 320,186',
+	'M466,104 C460,148 444,172 424,184',
+	'M262,356 C276,320 298,298 322,288',
+	'M450,356 C444,322 436,304 422,290',
+];
 ---
 
 <section class="hero" id="hero">
 	<div class="container hero-grid">
-		<div>
+		<div class="hero-copy">
 			<span class="eyebrow">{t.hero.eyebrow}</span>
-			<h1>{t.hero.title}</h1>
+			<h1>
+				{t.hero.titleLines.map((line) => <span class="h1-line">{line} </span>)}
+				<span class="h1-accent">{t.hero.titleAccent}</span>
+			</h1>
 			<p class="lede">{t.hero.lede}</p>
-			<p class="hero-tools">{t.hero.toolsLabel} <b>{t.hero.tools}</b></p>
-			<div class="btn-row">
-				<a href={`${home}#contact`} class="btn btn-primary">{t.hero.ctaPrimary}</a>
-				<a href={`${home}#how-it-works`} class="btn btn-ghost">{t.hero.ctaSecondary}</a>
+
+			<ul class="hero-pillars">
+				{
+					t.hero.pillars.map((p, i) => (
+						<li>
+							<span class="pillar-icon">
+								<Icon name={pillarIcons[i]} size={20} />
+							</span>
+							<span>{p}</span>
+						</li>
+					))
+				}
+			</ul>
+
+			<div class="btn-row hero-actions">
+				<a href={`${home}#contact`} class="btn btn-primary">
+					{t.hero.ctaPrimary}
+					<Icon name="arrow-right" size={18} />
+				</a>
+				<a href={`${home}#approach`} class="btn-play">
+					<span class="btn-play-circle"><Icon name="play" size={14} /></span>
+					{t.hero.ctaSecondary}
+				</a>
 			</div>
 		</div>
 
-		<div>
-			<div class="flow-visual">
-				<svg viewBox="0 0 520 300" role="img" aria-labelledby="heroFlowTitle">
-					<title id="heroFlowTitle"
-						>Diagram: a website form submission flows through AI qualification, n8n, a CRM, Slack/Email
-						and reporting</title
-					>
-					<path class="flow-line flow-anim" d="M75,50 H190" />
-					<path class="flow-line flow-anim" d="M265,50 H380 V115" />
-					<path class="flow-line flow-anim" d="M380,150 V190 H265" />
-					<path class="flow-line flow-anim" d="M190,225 H75 V190" />
-					<path class="flow-line flow-anim" d="M75,155 V120" />
+		<figure class="flow" aria-label={f.label}>
+			<div class="flow-canvas" style={`--hub-x:${HUB.x};--hub-y:${HUB.y}`}>
+				<svg class="flow-wires" viewBox="0 0 680 460" aria-hidden="true" focusable="false">
+					<defs>
+						<linearGradient id="wireGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="680" y2="0">
+							<stop offset="0" stop-color="#8fb4ff" stop-opacity="0.35"></stop>
+							<stop offset="0.45" stop-color="#3d63ff"></stop>
+							<stop offset="0.55" stop-color="#5a5cff"></stop>
+							<stop offset="1" stop-color="#9b6bff" stop-opacity="0.5"></stop>
+						</linearGradient>
+						<filter id="wireGlow" x="-10%" y="-30%" width="120%" height="160%">
+							<feGaussianBlur stdDeviation="4"></feGaussianBlur>
+						</filter>
+						<marker id="stageArrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+							<path d="M1,1 L8,5 L1,9" fill="none" stroke="#3d63ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+						</marker>
+					</defs>
 
-					<rect class="flow-node" x="10" y="30" width="130" height="40" rx="8"></rect>
-					<text class="flow-label" x="75" y="46" text-anchor="middle">Website Form</text>
-					<text class="flow-sub" x="75" y="60" text-anchor="middle">trigger</text>
-
-					<rect class="flow-node flow-node-active" x="195" y="30" width="70" height="40" rx="8"></rect>
-					<text class="flow-label" x="230" y="46" text-anchor="middle">AI</text>
-					<text class="flow-sub" x="230" y="60" text-anchor="middle">qualify</text>
-
-					<rect class="flow-node flow-node-active" x="345" y="95" width="70" height="40" rx="8"></rect>
-					<text class="flow-label" x="380" y="111" text-anchor="middle">n8n</text>
-					<text class="flow-sub" x="380" y="125" text-anchor="middle">orchestrate</text>
-
-					<rect class="flow-node" x="345" y="170" width="70" height="40" rx="8"></rect>
-					<text class="flow-label" x="380" y="186" text-anchor="middle">CRM</text>
-					<text class="flow-sub" x="380" y="200" text-anchor="middle">record</text>
-
-					<rect class="flow-node" x="185" y="205" width="90" height="40" rx="8"></rect>
-					<text class="flow-label" x="230" y="221" text-anchor="middle">Slack / Email</text>
-					<text class="flow-sub" x="230" y="235" text-anchor="middle">notify</text>
-
-					<rect class="flow-node" x="10" y="150" width="130" height="40" rx="8"></rect>
-					<text class="flow-label" x="75" y="166" text-anchor="middle">Reporting</text>
-					<text class="flow-sub" x="75" y="180" text-anchor="middle">result</text>
+					<g class="wire-glow" filter="url(#wireGlow)">
+						{[...inWires, ...outWires].filter((_, i) => i % 3 === 1).map((d) => <path d={d} />)}
+					</g>
+					<g class="wire-strands">
+						{[...inWires, ...outWires].map((d) => <path d={d} />)}
+					</g>
+					<g class="wire-pulse">
+						{[...inWires, ...outWires].filter((_, i) => i % 3 === 1).map((d, i) => (
+							<path d={d} style={`animation-delay:${(-i * 0.37).toFixed(2)}s`} />
+						))}
+					</g>
+					<g class="stage-arrows">
+						{stageArrows.map((d) => <path d={d} marker-end="url(#stageArrow)" />)}
+					</g>
 				</svg>
-				<p class="flow-caption">{t.hero.flowCaption}</p>
+
+				<ul class="flow-col flow-sources">
+					{
+						f.sources.map((s, i) => (
+							<li class="flow-chip" style={`--x:${SRC.x};--y:${sourceY[i]};--w:${SRC.w}`}>
+								<span class="chip-icon tone-blue">
+									<Icon name={sourceIcons[i]} size="100%" />
+								</span>
+								{s}
+							</li>
+						))
+					}
+				</ul>
+
+				<div class="flow-hub">
+					<img src="/logo-mark.png" alt="" width="32" height="40" />
+					<span>{f.hub}</span>
+				</div>
+
+				<ul class="flow-col flow-tools">
+					{
+						f.tools.map((s, i) => (
+							<li class="flow-chip" style={`--x:${TOOL.x};--y:${toolY[i]};--w:${TOOL.w}`}>
+								<span class={`chip-icon tone-${toolTone[i]}`}>
+									<Icon name={toolIcons[i]} size="100%" />
+								</span>
+								{s}
+							</li>
+						))
+					}
+				</ul>
+
+				<ol class="flow-stages">
+					{
+						f.stages.map((st, i) => (
+							<li class="flow-stage" style={`--x:${stagePos[i].x};--y:${stagePos[i].y};--w:${stagePos[i].w}`}>
+								<h3>
+									<span class="stage-num">{i + 1}.</span> {st.title}
+								</h3>
+								<ul>
+									{st.items.map((it) => (
+										<li>
+											<Icon name="check" size="100%" strokeWidth={2.5} />
+											{it}
+										</li>
+									))}
+								</ul>
+							</li>
+						))
+					}
+				</ol>
 			</div>
-		</div>
+		</figure>
 	</div>
 </section>
