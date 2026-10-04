@@ -57,9 +57,9 @@
 	- min-width: 768px:  tablets
 	- min-width: 1024px: desktop (multi-column sections)
 	- min-width: 1200px: inline header nav
-	- min-width: 1280px: approach intro on the left, tech-strip label on the left
+	- min-width: 1280px: approach intro on the left
 	- min-width: 1360px: hero text + diagram side by side
-	- min-width: 1440px: extras that need the full width (tech-strip note)
+	- min-width: 1440px: tech strip in a single row (label | logos | note)
 	The container is fluid: it fills the viewport up to 1440px, so layouts
 	stretch between breakpoints instead of jumping to a fixed column.
 	Most laptops (MacBooks, Windows at 125–150% scaling) are 1280–1536px wide.
@@ -1177,10 +1177,15 @@ header.site.scrolled {
 }
 .tech-strip-inner {
 	display: grid;
+	grid-template-areas:
+		'label'
+		'logos'
+		'note';
 	gap: 22px;
 	align-items: center;
 }
 .tech-strip-label {
+	grid-area: label;
 	margin: 0;
 	color: var(--muted);
 	font-weight: 600;
@@ -1190,6 +1195,7 @@ header.site.scrolled {
 	font-size: 11px !important;
 }
 .tech-strip-logos {
+	grid-area: logos;
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -1225,10 +1231,12 @@ header.site.scrolled {
 	letter-spacing: -0.03em;
 }
 .tech-strip-note {
-	display: none;
-	margin: 0;
+	grid-area: note;
+	justify-self: end;
+	margin: 0 6px 0 0;
 	font-family: 'Caveat', 'Segoe Script', cursive;
 	font-size: 22px;
+	white-space: nowrap;
 	line-height: 1;
 	color: var(--accent);
 	transform: rotate(-6deg);
@@ -1245,9 +1253,28 @@ header.site.scrolled {
 	stroke-linecap: round;
 }
 
+/* Handwritten note on every width:
+   mobile — under the logos, right-aligned;
+   768–1439 — top row, opposite the label, logos full-width below;
+   1440+ — label | logos | note in one row. */
+@media (min-width: 768px) {
+	.tech-strip-inner {
+		grid-template-areas:
+			'label note'
+			'logos logos';
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 24px 32px;
+	}
+	.tech-strip-label {
+		max-width: none;
+	}
+	.tech-strip-note {
+		font-size: 24px;
+	}
+}
+
 @media (min-width: 1024px) {
-	/* 1024+: logos in one row with dividers; 1280+: label on the left;
-	   1440+: handwritten note on the right */
+	/* logos in one row with dividers */
 	.tech-logo {
 		font-size: 15.5px;
 		gap: 7px;
@@ -1271,19 +1298,17 @@ header.site.scrolled {
 	}
 }
 
-@media (min-width: 1280px) {
-	.tech-strip-inner {
-		grid-template-columns: 180px minmax(0, 1fr);
-		gap: 28px;
-	}
-}
-
 @media (min-width: 1440px) {
 	.tech-strip-inner {
+		grid-template-areas: 'label logos note';
 		grid-template-columns: 180px minmax(0, 1fr) auto;
+		gap: 28px;
+	}
+	.tech-strip-label {
+		max-width: 260px;
 	}
 	.tech-strip-note {
-		display: block;
+		font-size: 22px;
 	}
 }
 
