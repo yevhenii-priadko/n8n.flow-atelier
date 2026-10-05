@@ -27,7 +27,7 @@ const langs: { code: Locale; label: string }[] = [
 <header class="site" id="siteHeader">
 	<div class="container nav">
 		<a href={home} class="brand">
-			<img src="/logo-mark.png" alt="" class="brand-mark" width="32" height="40" />
+			<img src="/logo-mark.webp" alt="" class="brand-mark" width="32" height="40" />
 			{t.brand}
 		</a>
 
@@ -90,7 +90,16 @@ const langs: { code: Locale; label: string }[] = [
 		}
 	});
 
-	const onScroll = () => header?.classList.toggle('scrolled', window.scrollY > 8);
+	// Read scrollY inside rAF so the first check doesn't force a synchronous layout during load
+	let ticking = false;
+	const onScroll = () => {
+		if (ticking) return;
+		ticking = true;
+		requestAnimationFrame(() => {
+			header?.classList.toggle('scrolled', window.scrollY > 8);
+			ticking = false;
+		});
+	};
 	onScroll();
 	window.addEventListener('scroll', onScroll, { passive: true });
 </script>

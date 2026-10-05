@@ -3,12 +3,16 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://flow-atelier.studio',
-	i18n: {
-		locales: ['en', 'uk'],
-		defaultLocale: 'en',
-		routing: {
-			prefixDefaultLocale: true,
-		},
-	},
+  site: 'https://n8nflow-atelier.vercel.app/',
+  build: {
+    // Inline the CSS into the HTML so it isn't a separate render-blocking request
+    inlineStylesheets: 'always',
+  },
+  i18n: {
+    locales: ['en', 'uk'],
+    defaultLocale: 'en',
+    routing: {
+      prefixDefaultLocale: true,
+    },
+  },
 });

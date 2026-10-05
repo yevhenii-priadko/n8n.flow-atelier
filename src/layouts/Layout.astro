@@ -10,6 +10,9 @@ interface Props {
 
 const { lang, title, description } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+// hreflang requires absolute URLs
+const hrefEn = new URL('/en/', Astro.site).href;
+const hrefUk = new URL('/uk/', Astro.site).href;
 ---
 
 <!doctype html>
@@ -37,11 +40,11 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<meta name="twitter:description" content={description} />
 
 		<!-- hreflang -->
-		<link rel="alternate" hreflang="en" href="/en/" />
-		<link rel="alternate" hreflang="uk" href="/uk/" />
-		<link rel="alternate" hreflang="x-default" href="/en/" />
+		<link rel="alternate" hreflang="en" href={hrefEn} />
+		<link rel="alternate" hreflang="uk" href={hrefUk} />
+		<link rel="alternate" hreflang="x-default" href={hrefEn} />
 
-		<!-- Favicon generated from the header logo mark (logo-mark.png) -->
+		<!-- Favicon generated from the header logo mark (logo-mark.png; on-page logo uses logo-mark.webp) -->
 		<link rel="icon" href="/favicon.ico" sizes="any" />
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -49,10 +52,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<!-- Fonts: functional fallback stack is used everywhere; the page remains fully readable if this request is blocked. -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link
-			href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Caveat:wght@600&display=swap"
-			rel="stylesheet"
-		/>
+		<!-- Loaded without blocking render: text paints immediately in the fallback font, then swaps -->
+		<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Caveat:wght@600&display=swap" />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Caveat:wght@600&display=swap" media="print" onload="this.media='all'" />
+		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Caveat:wght@600&display=swap" /></noscript>
 
 		<meta name="generator" content={Astro.generator} />
 	</head>
