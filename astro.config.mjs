@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://n8nflow-atelier.vercel.app/',
+  site: 'https://www.flow-atelier.studio',
   build: {
     // Inline the CSS into the HTML so it isn't a separate render-blocking request
     inlineStylesheets: 'always',
