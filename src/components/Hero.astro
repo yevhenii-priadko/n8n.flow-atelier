@@ -363,9 +363,9 @@ const stageArrows = [
 					{
 						f.stages.map((st, i) => (
 							<li class="flow-stage" style={`--x:${stagePos[i].x};--y:${stagePos[i].y};--w:${stagePos[i].w}`}>
-								<h3>
+								<p class="flow-stage-title">
 									<span class="stage-num">{i + 1}.</span> {st.title}
-								</h3>
+								</p>
 								<ul>
 									{st.items.map((it) => (
 										<li>

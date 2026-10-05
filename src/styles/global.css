@@ -34,7 +34,7 @@
 	--surface: #ffffff;
 	--ink: #0e1846;
 	--ink-soft: #485178;
-	--muted: #8890b0;
+	--muted: #5f6789; /* darkened from #8890b0 for WCAG AA 4.5:1 on all page backgrounds */
 	--line: #e2e7f5;
 	--accent: #2f4df0;
 	--accent-2: #7c4dff;
@@ -836,7 +836,8 @@ header.site.scrolled {
 	padding: calc(12 * var(--u)) calc(14 * var(--u));
 	min-width: 0;
 }
-.flow-stage h3 {
+.flow-stage-title {
+	line-height: 1.15;
 	font-family: var(--sans);
 	font-size: calc(13 * var(--u));
 	font-weight: 700;
