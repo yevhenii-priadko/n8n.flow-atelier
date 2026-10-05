@@ -167,22 +167,49 @@ section {
 	cursor: pointer;
 	font-family: var(--sans);
 	transition:
-		transform 0.15s ease,
-		background 0.15s ease,
-		border-color 0.15s ease;
+		transform 0.2s ease,
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease;
 }
 .btn:focus-visible {
 	outline: 2px solid var(--accent);
 	outline-offset: 2px;
 }
 .btn-primary {
+	position: relative;
+	isolation: isolate;
 	background: var(--accent-grad);
 	color: var(--accent-ink);
 	box-shadow: 0 10px 24px -8px rgba(47, 77, 240, 0.55);
 }
-.btn-primary:hover {
+/* A gradient can't be transitioned, so the hover colour fades in as an overlay layer instead of swapping the background (which made the button "blink"). */
+.btn-primary::before {
+	content: '';
+	position: absolute;
+	inset: -1px;
+	border-radius: inherit;
 	background: var(--accent-hover);
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	z-index: -1;
+	pointer-events: none;
+}
+.btn-primary:hover {
 	transform: translateY(-1px);
+	box-shadow: 0 14px 28px -10px rgba(47, 77, 240, 0.6);
+}
+.btn-primary:hover::before {
+	opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+	.btn,
+	.btn-primary::before {
+		transition: none;
+	}
+	.btn-primary:hover {
+		transform: none;
+	}
 }
 .btn-ghost {
 	background: transparent;
