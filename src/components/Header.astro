@@ -90,16 +90,13 @@ const langs: { code: Locale; label: string }[] = [
 		}
 	});
 
-	// Read scrollY inside rAF so the first check doesn't force a synchronous layout during load
-	let ticking = false;
-	const onScroll = () => {
-		if (ticking) return;
-		ticking = true;
-		requestAnimationFrame(() => {
-			header?.classList.toggle('scrolled', window.scrollY > 8);
-			ticking = false;
-		});
-	};
-	onScroll();
-	window.addEventListener('scroll', onScroll, { passive: true });
+	// Toggle the "scrolled" header style with an IntersectionObserver on a tiny sentinel at the top
+	// of the page: no scroll listener and no layout reads (avoids forced reflow during load).
+	const sentinel = document.createElement('div');
+	sentinel.setAttribute('aria-hidden', 'true');
+	sentinel.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:8px;pointer-events:none;';
+	document.body.prepend(sentinel);
+	new IntersectionObserver(([entry]) => {
+		header?.classList.toggle('scrolled', !entry.isIntersecting);
+	}).observe(sentinel);
 </script>

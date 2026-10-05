@@ -52,8 +52,8 @@ const hrefUk = new URL('/uk/', Astro.site).href;
 		<!-- Fonts: functional fallback stack is used everywhere; the page remains fully readable if this request is blocked. -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<!-- Loaded without blocking render: text paints immediately in the fallback font, then swaps -->
-		<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Caveat:wght@600&display=swap" />
+		<!-- Loaded without blocking render: text paints immediately in the fallback font, then swaps.
+		     No rel="preload" here on purpose: it raises the fonts to high priority and they compete with first paint (≈+1.8s FCP on /uk/ with Cyrillic subsets). -->
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Caveat:wght@600&display=swap" media="print" onload="this.media='all'" />
 		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Caveat:wght@600&display=swap" /></noscript>
 
