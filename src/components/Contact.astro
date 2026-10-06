@@ -7,6 +7,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = getDictionary(lang);
+const contactEmail = 'craft@flow-atelier.studio';
 ---
 
 <section class="section final" id="contact">
@@ -18,7 +19,12 @@ const t = getDictionary(lang);
 		</div>
 
 		<div class="final-grid">
-			<form class="form-card" id="leadForm">
+			<form
+				class="form-card"
+				id="leadForm"
+				data-lang={lang}
+				data-sending={t.contact.form.sending}
+			>
 				<div class="field">
 					<label for="fName">{t.contact.form.name}</label>
 					<input type="text" id="fName" name="name" required />
@@ -44,9 +50,18 @@ const t = getDictionary(lang);
 					<label for="fMore">{t.contact.form.moreLabel}</label>
 					<textarea id="fMore" name="additional_info"></textarea>
 				</div>
-				<!-- Prototype form: placeholder submission handler only. TODO: wire to the n8n webhook once the workflow is ready. -->
-				<button type="submit" class="btn btn-primary">{t.contact.form.submit}</button>
-				<p class="form-success" id="formSuccess">{t.contact.form.success}</p>
+				<!-- Honeypot: hidden from people, bots fill it in. Submissions with it filled are dropped. -->
+				<div class="hp-field" aria-hidden="true">
+					<label for="fWebsite">Website</label>
+					<input type="text" id="fWebsite" name="botcheck" tabindex="-1" autocomplete="off" />
+				</div>
+				<button type="submit" class="btn btn-primary" id="leadSubmit">{t.contact.form.submit}</button>
+				<div role="status" aria-live="polite">
+					<p class="form-success" id="formSuccess">{t.contact.form.success}</p>
+					<p class="form-error" id="formError">
+						{t.contact.form.error} <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
+					</p>
+				</div>
 			</form>
 
 			<div class="final-notes">
@@ -64,10 +79,85 @@ const t = getDictionary(lang);
 </section>
 
 <script>
-	const leadForm = document.getElementById('leadForm') as HTMLFormElement | null;
-	leadForm?.addEventListener('submit', (e) => {
+	/*
+	 * Lead form submission.
+	 * Where it goes is set by env vars (Vercel → Settings → Environment Variables, then redeploy):
+	 *   PUBLIC_FORM_ENDPOINT  – n8n Production webhook URL, or https://api.web3forms.com/submit
+	 *   PUBLIC_WEB3FORMS_KEY  – only for Web3Forms: the access key it emails you
+	 * Payload is JSON: name, email, company, manual_process, current_tools, additional_info, lang, page.
+	 * Success = HTTP 2xx and the JSON body (if any) doesn't say success:false.
+	 */
+	const ENDPOINT = import.meta.env.PUBLIC_FORM_ENDPOINT as string | undefined;
+	const WEB3FORMS_KEY = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
+
+	const form = document.getElementById('leadForm') as HTMLFormElement | null;
+	const submitBtn = document.getElementById('leadSubmit') as HTMLButtonElement | null;
+	const successEl = document.getElementById('formSuccess');
+	const errorEl = document.getElementById('formError');
+
+	const showStatus = (state: 'success' | 'error' | 'none') => {
+		successEl?.classList.toggle('visible', state === 'success');
+		errorEl?.classList.toggle('visible', state === 'error');
+	};
+
+	form?.addEventListener('submit', async (e) => {
 		e.preventDefault();
-		document.getElementById('formSuccess')?.classList.add('visible');
-		leadForm.reset();
+		if (!submitBtn || submitBtn.disabled) return;
+
+		const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+		showStatus('none');
+
+		// Honeypot filled → a bot. Pretend it worked and send nothing.
+		if (data.botcheck) {
+			form.reset();
+			showStatus('success');
+			return;
+		}
+		delete data.botcheck;
+
+		if (!ENDPOINT) {
+			console.error('[leadForm] PUBLIC_FORM_ENDPOINT is not set — submission not sent.');
+			showStatus('error');
+			return;
+		}
+
+		const lang = form.dataset.lang ?? 'en';
+		const payload: Record<string, string> = {
+			...data,
+			lang,
+			page: window.location.href,
+		};
+		if (WEB3FORMS_KEY) {
+			payload.access_key = WEB3FORMS_KEY;
+			payload.subject = `New lead from flow-atelier.studio (${lang.toUpperCase()}): ${data.name ?? ''}`;
+			payload.from_name = 'Flow Atelier website';
+		}
+
+		const label = submitBtn.innerHTML;
+		submitBtn.disabled = true;
+		submitBtn.textContent = form.dataset.sending ?? '…';
+
+		const controller = new AbortController();
+		const timeout = window.setTimeout(() => controller.abort(), 15000);
+
+		try {
+			const res = await fetch(ENDPOINT, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+				body: JSON.stringify(payload),
+				signal: controller.signal,
+			});
+			const body = await res.json().catch(() => null);
+			if (!res.ok || body?.success === false) throw new Error(`HTTP ${res.status}`);
+			form.reset();
+			showStatus('success');
+		} catch (err) {
+			console.error('[leadForm] submission failed:', err);
+			showStatus('error');
+		} finally {
+			window.clearTimeout(timeout);
+			submitBtn.disabled = false;
+			submitBtn.innerHTML = label;
+		}
 	});
 </script>

@@ -378,6 +378,8 @@ export const en = {
 			moreLabel: 'Anything else we should know? (optional)',
 			submit: 'Describe Your Process',
 			success: "Thanks — we'll get back to you shortly.",
+			sending: 'Sending…',
+			error: "Something went wrong and your message wasn't sent. Please try again or email us at",
 		},
 		notesTitle: 'Or book a consultation directly',
 		bookCta: 'Book an Automation Consultation',
