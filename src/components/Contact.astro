@@ -27,15 +27,15 @@ const contactEmail = 'craft@flow-atelier.studio';
 			>
 				<div class="field">
 					<label for="fName">{t.contact.form.name}</label>
-					<input type="text" id="fName" name="name" required />
+					<input type="text" id="fName" name="name" autocomplete="name" required />
 				</div>
 				<div class="field">
 					<label for="fEmail">{t.contact.form.email}</label>
-					<input type="email" id="fEmail" name="email" required />
+					<input type="email" id="fEmail" name="email" autocomplete="email" required />
 				</div>
 				<div class="field">
 					<label for="fCompany">{t.contact.form.company}</label>
-					<input type="text" id="fCompany" name="company" />
+					<input type="text" id="fCompany" name="company" autocomplete="organization" />
 				</div>
 				<div class="field">
 					<label for="fManual">{t.contact.form.manualLabel}</label>
