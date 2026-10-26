@@ -1,5 +1,6 @@
 ---
 import { getDictionary, type Locale } from '../i18n/utils';
+import { BOOKING_URL } from '../config';
 
 interface Props {
 	lang: Locale;
@@ -67,8 +68,7 @@ const contactEmail = 'craft@flow-atelier.studio';
 			<div class="final-notes">
 				<h3>{t.contact.notesTitle}</h3>
 				<div class="btn-row">
-					<!-- TODO: point to the real booking link (Calendly etc.); currently it just stays on this section -->
-					<a href="#contact" class="btn btn-outline-light">{t.contact.bookCta}</a>
+					<a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" class="btn btn-outline-light">{t.contact.bookCta}</a>
 				</div>
 				<ul>
 					{t.contact.notes.map((note) => <li>{note}</li>)}
