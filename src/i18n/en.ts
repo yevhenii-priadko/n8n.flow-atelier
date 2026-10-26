@@ -42,7 +42,7 @@ export const en = {
 		title: 'From idea to results at scale',
 		lede: 'We look beyond the technical build. Our goal is to make your processes efficient, flexible and ready to grow.',
 		steps: [
-			{ title: 'Consultation', desc: 'We talk through your goals, challenges and expectations, and set priorities.', meta: 'Free / 30 min' },
+			{ title: 'Consultation', desc: 'We talk through your goals, challenges and expectations, and set priorities.', meta: 'Free / 60 min' },
 			{ title: 'Analysis & audit', desc: 'We study your processes, review your tools and find what can be optimised.', meta: '1–3 days' },
 			{ title: 'Solution & estimate', desc: 'We propose the right set of solutions and estimate cost and timeline.', meta: '1–3 days' },
 			{ title: 'Implementation', desc: 'We set up the automation and integrations and test every scenario.', meta: 'From 1 week' },
